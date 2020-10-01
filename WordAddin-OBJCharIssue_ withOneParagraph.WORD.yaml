@@ -1,0 +1,68 @@
+name: WordAddin-OBJCharIssue_ withOneParagraph
+description: Create a new snippet from a blank template.
+host: WORD
+api_set: {}
+script:
+  content: |
+    $("#run").click(() => tryCatch(run));
+
+    $("#Navigate1").click(() => highlight("1", "Warrantholder"));
+    var parRangeCol = [];
+
+    async function run() {
+      await Word.run(async (context) => {
+        var paraList = context.document.body.paragraphs;
+        context.load(paraList, "text");
+        await context.sync();
+        var para = paraList.items[1];
+        parRangeCol[1] = para;
+        context.trackedObjects.add(para);    
+      });
+    }
+    async function highlight(paraNum, textTohighlight) {
+      var par = parRangeCol[paraNum];
+      var searchResults = par.search(textTohighlight, { matchWholeWord: true });
+      par.context.load(searchResults);
+      await par.context.sync();
+      searchResults.items[0].select();
+      await par.context.sync();
+      console.log("Highlighted!");
+    }
+    /** Default helper for invoking an action and handling errors. */
+    async function tryCatch(callback) {
+      try {
+        await callback();
+      } catch (error) {
+        // Note: In a production add-in, you'd want to notify the user through your add-in's UI.
+        console.error(error);
+      }
+    }
+  language: typescript
+template:
+  content: "<strong>First click track button :</strong><br/>\n<button id=\"run\" class=\"ms-Button\">\n    <span class=\"ms-Button-label\">Track\\Load Paragraphs</span>\n\t</button>\n<br/>\n<br/>\n<br/>\n<strong>Now, click below buttons to highlight text :</strong><br/>\n<button id=\"Navigate1\" class=\"ms-Button\">\n\t<span class=\"ms-Button-label\">Warrantholder</span>\n</button>\n<br/>\n"
+  language: html
+style:
+  content: |-
+    section.samples {
+        margin-top: 20px;
+    }
+
+    section.samples .ms-Button, section.setup .ms-Button {
+        display: block;
+        margin-bottom: 5px;
+        margin-left: 20px;
+        min-width: 80px;
+    }
+  language: css
+libraries: |
+  https://appsforoffice.microsoft.com/lib/1/hosted/office.js
+  @types/office-js
+
+  office-ui-fabric-js@1.4.0/dist/css/fabric.min.css
+  office-ui-fabric-js@1.4.0/dist/css/fabric.components.min.css
+
+  core-js@2.4.1/client/core.min.js
+  @types/core-js
+
+  jquery@3.1.1
+  @types/jquery@3.3.1
